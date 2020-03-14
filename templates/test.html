@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .box {
+            width: 440px;
+            background-color: aqua;
+            display: flex;
+
+        }
+    </style>
+</head>
+<body>
+<ul>
+    <li class="box">
+        <p style="width: 220px"> xxxx</p>
+        <p style="width: 220px"> zzzzz</p>
+    </li>
+</ul>
+
+<div class="box">
+    <p style="width: 220px"> xxxx</p>
+    <p style="width: 220px"> zzzzz</p>
+
+</div>
+</body>
+<script>
+    function getPercent(curNum, totalNum, isHasPercentStr) {
+        //curNum = parseFloat(curNum);
+        //totalNum = parseFloat(totalNum);
+        //console.log(curNum,totalNum)
+        if (isNaN(curNum) || isNaN(totalNum)) {
+            return '-';
+        }
+
+        return isHasPercentStr ?
+            totalNum <= 0 ? '0%' : (Math.round(curNum / totalNum * 10000) / 100.00 + '%') :
+            totalNum <= 0 ? 0 : (Math.round(curNum / totalNum * 10000) / 100.00);
+    }
+
+    function Percentage(num, total) {
+        return (Math.round(num / total * 10000) / 100.00 + "%");// 小数点后两位百分比
+
+    }
+
+
+</script>
+</html>
