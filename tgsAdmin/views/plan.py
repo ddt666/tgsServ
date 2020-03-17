@@ -114,7 +114,7 @@ class PlanView(APIView):
     authentication_classes = [LoginAuth]
 
     def get(self, request, *args, **kwargs):
-        print("query_params", request.query_params)
+        # print("query_params", request.query_params)
         filter_conditions = {}
         is_paging = True
         if request.query_params.get("noPage"):
@@ -132,10 +132,33 @@ class PlanView(APIView):
             else:
                 filter_conditions[k] = v
 
-        print("filter_conditions", filter_conditions)
-        query_set = Plan.objects.filter(**filter_conditions).order_by("-id")
+        # print("filter_conditions", filter_conditions)
+        from django.db.models import Count, Min, Max, Sum, DecimalField
+        from django.db.models.functions import Cast
+        query_set = Plan.objects.filter(**filter_conditions).order_by("id")
+        # print(query_set.values(sum=Sum('settlement__profit')))
+        # cast(sum(column_a+column_b) AS decimal(15,2))
+        q = query_set.aggregate(
+
+            settlement_info__m_exposure_count=Sum('settlement__m_exposure_count'),
+            settlement_info__m_click_count=Sum('settlement__m_click_count'),
+            settlement_info__m_settlement_count=Sum('settlement__m_settlement_count'),
+            settlement_info__income=Sum('settlement__income'),
+
+            settlement_info__a_exposure_count=Sum('settlement__a_exposure_count'),
+            settlement_info__a_click_count=Sum('settlement__a_click_count'),
+            settlement_info__cost=Sum('settlement__cost'),
+
+            settlement_info__profit=Sum('settlement__profit'),
+
+        )
+        total_dict = {}
+        for k, v in q.items():
+            total_dict[k.replace("__", ".")] = round(v, 2) if v else "-"
+            # print(k, v)
+        # print("total_dict", total_dict)
         # query_set = Plan.objects.all().order_by("-id")
-        print("query_set.count()", query_set.count())
+        # print("query_set.count()", query_set.count())
         if is_paging:
             paginator = MyPagination()
             query_set = paginator.paginate_queryset(query_set, request, view=None)
@@ -145,7 +168,8 @@ class PlanView(APIView):
         plan_ser = PlanSerializer(query_set, many=True)
         # print("plan_ser.data", plan_ser.data)
         data = {"count": count,
-                "list": plan_ser.data
+                "list": plan_ser.data,
+                "summary": total_dict
                 }
         res = BaseResponse()
         res.msg = "获取计划列表成功"
